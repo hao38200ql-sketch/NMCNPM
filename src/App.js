@@ -14,6 +14,7 @@ import Checkout from "./components/Checkout";
 import Login from "./components/Login";
 import Admin from "./components/Admin";
 import Order from "./components/Order";
+import Profile from "./components/Profile";
 
 function PrivateRoute({ children }) {
   const { user } = useAuth();
@@ -40,6 +41,7 @@ function AppRoutes() {
         <Route path="/cart" element={<PrivateRoute><Cart /></PrivateRoute>} />
         <Route path="/checkout" element={<PrivateRoute><Checkout /></PrivateRoute>} />
         <Route path="/order" element={<PrivateRoute><Order /></PrivateRoute>} />
+        <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
         <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
       </Routes>
     </>

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
@@ -10,7 +10,6 @@ function Menu() {
   const { lang, t, toggleLang } = useLang();
   const navigate = useNavigate();
   const [searchText, setSearchText] = useState("");
-  const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   const handleSearch = () => {
@@ -20,21 +19,12 @@ function Menu() {
     }
   };
 
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   const handleLogout = () => {
-    setDropdownOpen(false);
     logout();
     navigate("/");
   };
+
+  const isAdmin = user?.role === "admin";
 
   const categories = [
     { key: "ngu-coc", label: t.nguCoc, icon: "🌾" },
@@ -45,14 +35,6 @@ function Menu() {
     { key: "rau-cu", label: t.rauCu, icon: "🥦" },
     { key: "trai-cay", label: t.traiCay, icon: "🍎" },
     { key: "do-uong", label: "Đồ Uống", icon: "🥤" },
-  ];
-
-  const settingsItems = [
-    { icon: "👤", label: "Tài khoản", key: "account" },
-    { icon: "🔒", label: "Quyền riêng tư", key: "privacy" },
-    { icon: "🖥️", label: "Màn hình", key: "display" },
-    { icon: "♿", label: "Trợ năng", key: "accessibility" },
-    { icon: "❓", label: "Trợ giúp", key: "help" },
   ];
 
   return (
@@ -85,103 +67,60 @@ function Menu() {
         <div style={styles.topRight}>
           {/* User */}
           {user ? (
-            <div style={styles.settingsWrapper} ref={dropdownRef}>
-              <button
-                style={styles.settingsBtn}
-                onClick={() => setDropdownOpen((prev) => !prev)}
+            <div style={styles.userBox} ref={dropdownRef}>
+              <div
+                style={{
+                  ...styles.avatar,
+                  backgroundColor: isAdmin ? "#e53e3e" : "#f6ad55",
+                  cursor: "pointer",
+                }}
+                onClick={() => navigate("/profile")}
               >
-                <div style={styles.avatar}>
-                  {user.name.charAt(0).toUpperCase()}
-                </div>
-                <div style={styles.userInfo}>
-                  <span style={styles.userName}>
+                {user.name.charAt(0).toUpperCase()}
+              </div>
+              <div style={styles.userInfo}>
+                <div style={styles.userNameRow}>
+                  <span
+                    style={{
+                      ...styles.userName,
+                      cursor: "pointer",
+                    }}
+                    onClick={() => navigate("/profile")}
+                  >
                     {t.hello}, {user.name.split(" ").pop()}!
                   </span>
-                  <span style={styles.userEmail}>{user.email}</span>
+                  {isAdmin && <span style={styles.adminBadge}>ADMIN</span>}
                 </div>
-                <span style={{
-                  color: "white",
-                  fontSize: "13px",
-                  transition: "transform 0.2s",
-                  transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
-                }}>▾</span>
-              </button>
-
-              {dropdownOpen && (
-                <div style={styles.dropdown}>
-                  {/* Header */}
-                  <div style={styles.dropdownHeader}>
-                    <div style={styles.dropdownAvatar}>
-                      {user.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <p style={styles.dropdownName}>{user.name}</p>
-                      <p style={styles.dropdownEmail}>{user.email}</p>
-                    </div>
-                  </div>
-
-                  <div style={styles.dropdownDivider} />
-
+                <div style={{ display: "flex", gap: "8px" }}>
                   <button
-                    style={styles.dropdownItem}
-                    onClick={() => { setDropdownOpen(false); navigate("/order"); }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#f0fff4"}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                    style={styles.profileBtn}
+                    onClick={() => navigate("/profile")}
                   >
-                    <span style={styles.dropdownItemIcon}>📋</span>
-                    <span style={styles.dropdownItemLabel}>Đơn hàng của tôi</span>
-                    <span style={styles.dropdownArrow}>›</span>
+                    👤 Hồ sơ
                   </button>
-
-                  {/* Admin */}
-                  <button
-                    style={styles.dropdownItem}
-                    onClick={() => { setDropdownOpen(false); navigate("/admin"); }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#f0fff4"}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
-                  >
-                    <span style={styles.dropdownItemIcon}>⚙️</span>
-                    <span style={styles.dropdownItemLabel}>Quản trị Admin</span>
-                    <span style={styles.dropdownArrow}>›</span>
-                  </button>
-
-                  <div style={styles.dropdownDivider} />
-
-                  {/* Settings */}
-                  <p style={styles.dropdownSection}>CÀI ĐẶT</p>
-                  {settingsItems.map((item) => (
+                  {isAdmin ? (
                     <button
-                      key={item.key}
-                      style={styles.dropdownItem}
-                      onClick={() => {
-                        setDropdownOpen(false);
-                        alert(`Tính năng "${item.label}" đang được phát triển.`);
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#f0fff4"}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                      style={styles.adminLinkBtn}
+                      onClick={() => navigate("/admin")}
                     >
-                      <span style={styles.dropdownItemIcon}>{item.icon}</span>
-                      <span style={styles.dropdownItemLabel}>{item.label}</span>
-                      <span style={styles.dropdownArrow}>›</span>
+                      ⚙️ Quản trị
                     </button>
-                  ))}
-
-                  <div style={styles.dropdownDivider} />
-
-                  {/* Logout */}
+                  ) : (
+                    <button
+                      style={styles.orderLinkBtn}
+                      onClick={() => navigate("/order")}
+                    >
+                      📦 Đơn hàng
+                    </button>
+                  )}
                   <button
-                    style={styles.logoutItem}
+                    style={styles.logoutBtn}
                     onClick={handleLogout}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#fff5f5"}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
                   >
-                    <span style={styles.dropdownItemIcon}>🚪</span>
-                    <span style={{ color: "#e53e3e", fontWeight: "600", fontSize: "14px" }}>
-                      {t.logout}
-                    </span>
+                    {t.logout}
                   </button>
                 </div>
-              )}
+              </div>
             </div>
           ) : (
             <button style={styles.loginBtn} onClick={() => navigate("/login")}>
@@ -229,16 +168,6 @@ function Menu() {
           })}
         >
           🏪 {t.allProducts}
-        </NavLink>
-        <NavLink
-          to="/order"
-          style={({ isActive }) => ({
-            ...styles.navLink,
-            backgroundColor: isActive ? "#2d8a5e" : "transparent",
-            borderBottom: isActive ? "3px solid #fff" : "3px solid transparent",
-          })}
-        >
-          📋 Đơn Hàng
         </NavLink>
         {categories.map((cat) => (
           <NavLink
@@ -349,23 +278,20 @@ const styles = {
     fontFamily: "sans-serif",
   },
 
-  /* User dropdown */
-  settingsWrapper: { position: "relative", fontFamily: "sans-serif" },
-  settingsBtn: {
+  /* User Box */
+  userBox: {
     display: "flex",
     alignItems: "center",
-    gap: "10px",
-    cursor: "pointer",
-    backgroundColor: "rgba(255,255,255,0.15)",
-    border: "none",
+    gap: "12px",
     padding: "8px 14px",
+    backgroundColor: "rgba(255,255,255,0.1)",
     borderRadius: "10px",
+    fontFamily: "sans-serif",
   },
   avatar: {
     width: "36px",
     height: "36px",
     borderRadius: "50%",
-    backgroundColor: "#f6ad55",
     color: "white",
     display: "flex",
     alignItems: "center",
@@ -374,82 +300,78 @@ const styles = {
     fontSize: "16px",
     flexShrink: 0,
   },
-  userInfo: { display: "flex", flexDirection: "column", gap: "1px" },
-  userName: { color: "white", fontSize: "13px", fontWeight: "600", fontFamily: "sans-serif" },
-  userEmail: {
-    color: "#c6f6d5",
-    fontSize: "11px",
+  userInfo: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "6px",
+  },
+  userNameRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+  },
+  userName: {
+    color: "white",
+    fontSize: "13px",
+    fontWeight: "600",
     fontFamily: "sans-serif",
-    maxWidth: "130px",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
+  },
+  adminBadge: {
+    backgroundColor: "#e53e3e",
+    color: "white",
+    fontSize: "10px",
+    fontWeight: "800",
+    padding: "2px 6px",
+    borderRadius: "4px",
     whiteSpace: "nowrap",
   },
-  dropdown: {
-    position: "absolute",
-    top: "calc(100% + 10px)",
-    right: 0,
-    backgroundColor: "white",
-    borderRadius: "14px",
-    boxShadow: "0 8px 32px rgba(0,0,0,0.16)",
-    minWidth: "240px",
-    padding: "8px",
-    zIndex: 2000,
-    border: "1px solid #e2e8f0",
-  },
-  dropdownHeader: { display: "flex", alignItems: "center", gap: "12px", padding: "10px 12px 12px" },
-  dropdownAvatar: {
-    width: "42px",
-    height: "42px",
-    borderRadius: "50%",
-    backgroundColor: "#38a169",
+  profileBtn: {
+    backgroundColor: "#f6ad55",
     color: "white",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontWeight: "800",
-    fontSize: "18px",
-    flexShrink: 0,
-  },
-  dropdownName: { fontSize: "14px", fontWeight: "700", color: "#2d3748", margin: "0 0 2px" },
-  dropdownEmail: { fontSize: "12px", color: "#718096", margin: 0 },
-  dropdownDivider: { height: "1px", backgroundColor: "#e2e8f0", margin: "4px 0" },
-  dropdownSection: {
-    fontSize: "10px",
-    fontWeight: "700",
-    color: "#a0aec0",
-    letterSpacing: "1px",
-    padding: "6px 12px 2px",
-    margin: 0,
-  },
-  dropdownItem: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    width: "100%",
-    padding: "9px 12px",
     border: "none",
-    backgroundColor: "transparent",
-    borderRadius: "8px",
+    padding: "6px 12px",
+    borderRadius: "6px",
+    fontSize: "12px",
+    fontWeight: "600",
     cursor: "pointer",
-    textAlign: "left",
     fontFamily: "sans-serif",
+    whiteSpace: "nowrap",
   },
-  dropdownItemIcon: { fontSize: "17px", width: "24px", textAlign: "center", flexShrink: 0 },
-  dropdownItemLabel: { flex: 1, fontSize: "14px", color: "#2d3748", fontWeight: "500" },
-  dropdownArrow: { color: "#a0aec0", fontSize: "16px" },
-  logoutItem: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    width: "100%",
-    padding: "9px 12px",
-    border: "none",
-    backgroundColor: "transparent",
-    borderRadius: "8px",
+  orderLinkBtn: {
+    backgroundColor: "rgba(255,255,255,0.2)",
+    color: "white",
+    border: "1px solid rgba(255,255,255,0.3)",
+    padding: "6px 12px",
+    borderRadius: "6px",
+    fontSize: "12px",
+    fontWeight: "600",
     cursor: "pointer",
-    textAlign: "left",
     fontFamily: "sans-serif",
+    whiteSpace: "nowrap",
+  },
+  adminLinkBtn: {
+    backgroundColor: "#e53e3e",
+    color: "white",
+    border: "none",
+    padding: "6px 12px",
+    borderRadius: "6px",
+    fontSize: "12px",
+    fontWeight: "600",
+    cursor: "pointer",
+    fontFamily: "sans-serif",
+    whiteSpace: "nowrap",
+  },
+  logoutBtn: {
+    backgroundColor: "rgba(255,255,255,0.15)",
+    color: "white",
+    border: "1px solid rgba(255,255,255,0.3)",
+    padding: "6px 12px",
+    borderRadius: "6px",
+    fontSize: "12px",
+    fontWeight: "600",
+    cursor: "pointer",
+    fontFamily: "sans-serif",
+    whiteSpace: "nowrap",
   },
 
   /* Cart */

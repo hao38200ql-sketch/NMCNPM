@@ -1,46 +1,87 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useOrder } from "../context/OrderContext";
+import { useAuth } from "../context/AuthContext";
 
 const STATUS = {
   confirmed: { label: "Đã xác nhận", color: "#3182ce", bg: "#ebf8ff", icon: "✅" },
-  shipping:  { label: "Đang giao",   color: "#d69e2e", bg: "#fffff0", icon: "🚚" },
-  delivered: { label: "Đã nhận",     color: "#38a169", bg: "#f0fff4", icon: "📦" },
+  shipping: { label: "Đang giao", color: "#d69e2e", bg: "#fffff0", icon: "🚚" },
+  delivered: { label: "Đã nhận", color: "#38a169", bg: "#f0fff4", icon: "📦" },
+  cancelled: { label: "Đã hủy", color: "#c53030", bg: "#fff5f5", icon: "❌" },
 };
 
 function Order() {
-  const { order } = useOrder();
+  const { user } = useAuth();
+  const { getOrdersByUser } = useOrder();
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(null);
 
-  const toggle = (id) => setExpanded((prev) => (prev === id ? null : id));
-
-  if (order.length === 0) return (
-    <div style={styles.page}>
-      <div style={styles.container}>
-        <h2 style={styles.pageTitle}>📋 Lịch Sử Đơn Hàng</h2>
-        <div style={styles.empty}>
-          <p style={{ fontSize: "64px", margin: 0 }}>🛍️</p>
-          <p style={styles.emptyTitle}>Bạn chưa có đơn hàng nào</p>
-          <p style={styles.emptyText}>Hãy mua sắm và đơn hàng sẽ hiện ở đây!</p>
-          <button style={styles.shopBtn} onClick={() => navigate("/products")}>
-            🏪 Bắt đầu mua sắm
-          </button>
+  if (!user) {
+    return (
+      <div style={styles.page}>
+        <div style={styles.container}>
+          <h2 style={styles.pageTitle}>📋 Lịch Sử Đơn Hàng</h2>
+          <div style={styles.empty}>
+            <p style={{ fontSize: "64px", margin: 0 }}>🔒</p>
+            <p style={styles.emptyTitle}>Vui lòng đăng nhập</p>
+            <p style={styles.emptyText}>Đăng nhập để xem lịch sử đơn hàng của bạn!</p>
+            <button style={styles.shopBtn} onClick={() => navigate("/login")}>
+              🔑 Đăng nhập
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  // Lấy chỉ đơn hàng của user hiện tại
+  const myOrders = getOrdersByUser(user.id, user.email);
+
+  const toggle = (id) => setExpanded((prev) => (prev === id ? null : id));
+
+  if (myOrders.length === 0)
+    return (
+      <div style={styles.page}>
+        <div style={styles.container}>
+          <h2 style={styles.pageTitle}>📋 Lịch Sử Đơn Hàng</h2>
+          <div style={styles.empty}>
+            <p style={{ fontSize: "64px", margin: 0 }}>🛍️</p>
+            <p style={styles.emptyTitle}>Bạn chưa có đơn hàng nào</p>
+            <p style={styles.emptyText}>Hãy mua sắm và đơn hàng sẽ hiện ở đây!</p>
+            <button style={styles.shopBtn} onClick={() => navigate("/products")}>
+              🏪 Bắt đầu mua sắm
+            </button>
+          </div>
+        </div>
+      </div>
+    );
 
   return (
     <div style={styles.page}>
       <div style={styles.container}>
         <div style={styles.header}>
           <h2 style={styles.pageTitle}>📋 Lịch Sử Đơn Hàng</h2>
-          <span style={styles.orderCount}>{order.length} đơn hàng</span>
+          <span style={styles.orderCount}>{myOrders.length} đơn hàng</span>
+        </div>
+
+        {/* Stats */}
+        <div style={styles.statsRow}>
+          {[
+            { icon: "✅", value: myOrders.filter((o) => o.status === "confirmed").length, label: "Xác nhận" },
+            { icon: "🚚", value: myOrders.filter((o) => o.status === "shipping").length, label: "Đang giao" },
+            { icon: "📦", value: myOrders.filter((o) => o.status === "delivered").length, label: "Đã nhận" },
+            { icon: "❌", value: myOrders.filter((o) => o.status === "cancelled").length, label: "Hủy" },
+          ].map((stat, i) => (
+            <div key={i} style={styles.statCard}>
+              <span style={{ fontSize: "24px" }}>{stat.icon}</span>
+              <p style={styles.statValue}>{stat.value}</p>
+              <p style={styles.statLabel}>{stat.label}</p>
+            </div>
+          ))}
         </div>
 
         <div style={styles.list}>
-          {order.map((order) => {
+          {myOrders.map((order) => {
             const st = STATUS[order.status];
             const isOpen = expanded === order.id;
 
@@ -83,8 +124,8 @@ function Order() {
                         <p style={styles.infoValue}>{order.phone}</p>
                       </div>
                       <div style={styles.infoBox}>
-                        <p style={styles.infoLabel}>💳 Thanh toán</p>
-                        <p style={styles.infoValue}>COD (khi nhận hàng)</p>
+                        <p style={styles.infoLabel}>📧 Email</p>
+                        <p style={styles.infoValue}>{order.email}</p>
                       </div>
                       {order.note && (
                         <div style={styles.infoBox}>
@@ -105,7 +146,9 @@ function Order() {
                             src={item.image}
                             alt={item.title}
                             style={styles.itemImg}
-                            onError={(e) => { e.target.src = "https://via.placeholder.com/56"; }}
+                            onError={(e) => {
+                              e.target.src = "https://via.placeholder.com/56";
+                            }}
                           />
                           <div style={styles.itemInfo}>
                             <p style={styles.itemCategory}>
@@ -162,7 +205,7 @@ function Order() {
 
 const styles = {
   page: { backgroundColor: "#f7fafc", minHeight: "100vh", fontFamily: "sans-serif" },
-  container: { maxWidth: "860px", margin: "0 auto", padding: "32px 16px" },
+  container: { maxWidth: "920px", margin: "0 auto", padding: "32px 16px" },
   header: { display: "flex", alignItems: "center", gap: "12px", marginBottom: "24px" },
   pageTitle: { fontSize: "26px", fontWeight: "800", color: "#2d3748", margin: 0 },
   orderCount: { backgroundColor: "#38a169", color: "white", fontSize: "13px", fontWeight: "700", padding: "3px 10px", borderRadius: "20px" },
@@ -171,6 +214,12 @@ const styles = {
   emptyTitle: { fontSize: "18px", fontWeight: "700", color: "#2d3748", margin: "16px 0 8px" },
   emptyText: { color: "#718096", fontSize: "14px", margin: "0 0 24px" },
   shopBtn: { backgroundColor: "#38a169", color: "white", border: "none", padding: "12px 28px", borderRadius: "8px", fontSize: "15px", fontWeight: "600", cursor: "pointer" },
+
+  /* Stats */
+  statsRow: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginBottom: "24px" },
+  statCard: { backgroundColor: "white", borderRadius: "12px", padding: "16px", textAlign: "center", boxShadow: "0 1px 4px rgba(0,0,0,0.08)" },
+  statValue: { fontSize: "24px", fontWeight: "800", color: "#2d3748", margin: "6px 0 4px" },
+  statLabel: { fontSize: "12px", color: "#718096", margin: 0 },
 
   list: { display: "flex", flexDirection: "column", gap: "14px" },
 
@@ -183,6 +232,7 @@ const styles = {
     padding: "20px 24px",
     cursor: "pointer",
     gap: "16px",
+    transition: "background-color 0.2s",
   },
   cardLeft: { flex: 1 },
   orderMeta: { display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px", flexWrap: "wrap" },

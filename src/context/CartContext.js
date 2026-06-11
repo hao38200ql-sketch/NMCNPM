@@ -1,9 +1,37 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 
 const CartContext = createContext();
 
+const CART_STORAGE_KEY = "foodmart_cart";
+
+// Utility functions
+const saveCartToStorage = (cartItems) => {
+  try {
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
+  } catch (error) {
+    console.error("Error saving cart to localStorage:", error);
+  }
+};
+
+const loadCartFromStorage = () => {
+  try {
+    const data = localStorage.getItem(CART_STORAGE_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch (error) {
+    console.error("Error loading cart from localStorage:", error);
+    return [];
+  }
+};
+
 export function CartProvider({ children }) {
-  const [cartItems, setCartItems] = useState([]);
+  const [cartItems, setCartItems] = useState(() => loadCartFromStorage());
+  const [cartId] = useState(`CART-${Date.now()}`);
+  const [ngayTao] = useState(new Date().toISOString());
+
+  // Lưu vào localStorage mỗi khi cartItems thay đổi
+  useEffect(() => {
+    saveCartToStorage(cartItems);
+  }, [cartItems]);
 
   const addToCart = (product) => {
     setCartItems((prev) => {
@@ -35,7 +63,18 @@ export function CartProvider({ children }) {
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ cartItems, cartCount, addToCart, deleteItem, updateQuantity, clearCart }}>
+    <CartContext.Provider
+      value={{
+        cartItems,
+        cartCount,
+        cartId,
+        ngayTao,
+        addToCart,
+        deleteItem,
+        updateQuantity,
+        clearCart,
+      }}
+    >
       {children}
     </CartContext.Provider>
   );
