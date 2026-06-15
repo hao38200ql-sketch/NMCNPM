@@ -4,6 +4,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { LangProvider } from "./context/LangContext";
 import { ProductProvider } from "./context/ProductContext";
 import { OrderProvider } from "./context/OrderContext";
+import { VoucherProvider } from "./context/VoucherContext";
 import { useAuth } from "./context/AuthContext";
 import Menu from "./components/Menu";
 import Home from "./components/Home";
@@ -15,6 +16,9 @@ import Login from "./components/Login";
 import Admin from "./components/Admin";
 import Order from "./components/Order";
 import Profile from "./components/Profile";
+import Voucher from "./components/Voucher";
+import LuckyWheel from './pages/LuckyWheel';
+import { NotificationProvider } from './context/NotificationContext';
 
 function PrivateRoute({ children }) {
   const { user } = useAuth();
@@ -41,8 +45,10 @@ function AppRoutes() {
         <Route path="/cart" element={<PrivateRoute><Cart /></PrivateRoute>} />
         <Route path="/checkout" element={<PrivateRoute><Checkout /></PrivateRoute>} />
         <Route path="/order" element={<PrivateRoute><Order /></PrivateRoute>} />
+        <Route path="/voucher" element={<PrivateRoute><Voucher /></PrivateRoute>} />
         <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
         <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
+        <Route path="/lucky-wheel" element={<LuckyWheel />} />
       </Routes>
     </>
   );
@@ -55,9 +61,13 @@ function App() {
         <ProductProvider>
           <CartProvider>
             <OrderProvider>
-              <BrowserRouter>
-                <AppRoutes />
-              </BrowserRouter>
+              <NotificationProvider> {/* <-- BỌC VÀO ĐÂY */}
+              <VoucherProvider>
+                <BrowserRouter>
+                  <AppRoutes />
+                </BrowserRouter>
+              </VoucherProvider>
+              </NotificationProvider>
             </OrderProvider>
           </CartProvider>
         </ProductProvider>

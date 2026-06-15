@@ -31,7 +31,7 @@ export function OrderProvider({ children }) {
     saveOrdersToStorage(order);
   }, [order]);
 
-  const addOrder = ({ cartItems, total, shipping, name, phone, address, note, userId, email }) => {
+  const addOrder = ({ cartItems, total, shipping, discount = 0, name, phone, address, note, userId, email }) => {
     const newOrder = {
       id: `FM${Date.now()}`,
       date: new Date().toISOString(),
@@ -42,7 +42,8 @@ export function OrderProvider({ children }) {
       items: cartItems.map((item) => ({ ...item })),
       subtotal: total,
       shipping,
-      total: total + shipping,
+      discount,
+      total: total + shipping - discount,
       status: "confirmed",
       userId: userId,
       email: email,
