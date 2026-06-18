@@ -67,7 +67,7 @@ function Menu() {
         <div style={styles.logo} onClick={() => navigate("/")}>
           <span style={styles.logoIcon}>🌿</span>
           <div>
-            <span style={styles.logoText}>FreshMart</span>
+            <span style={styles.logoText}>FoodMart</span>
             <span style={styles.logoSub}>Siêu Thị Thực Phẩm Sạch</span>
           </div>
         </div>
