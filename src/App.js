@@ -19,6 +19,7 @@ import Profile from "./components/Profile";
 import Voucher from "./components/Voucher";
 import LuckyWheel from './pages/LuckyWheel';
 import { NotificationProvider } from './context/NotificationContext';
+import Chatbot from "./components/Chatbot";
 
 function PrivateRoute({ children }) {
   const { user } = useAuth();
@@ -50,6 +51,8 @@ function AppRoutes() {
         <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
         <Route path="/lucky-wheel" element={<LuckyWheel />} />
       </Routes>
+      
+      <Chatbot />
     </>
   );
 }
@@ -61,7 +64,7 @@ function App() {
         <ProductProvider>
           <CartProvider>
             <OrderProvider>
-              <NotificationProvider> {/* <-- BỌC VÀO ĐÂY */}
+              <NotificationProvider>
               <VoucherProvider>
                 <BrowserRouter>
                   <AppRoutes />
