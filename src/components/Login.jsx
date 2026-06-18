@@ -173,58 +173,7 @@ function Login() {
             </span>
           </p>
 
-          {/* Demo accounts */}
-          {!isRegister && (
-            <div style={styles.demoBox}>
-              <p style={styles.demoTitle}>🧪 Tài khoản demo:</p>
-
-              {/* Admin account */}
-              <div style={styles.demoAccount}>
-                <div style={styles.demoLeft}>
-                  <span style={styles.adminTag}>👑 ADMIN</span>
-                  <div>
-                    <p style={styles.demoText}>admin@foodmart.vn</p>
-                    <p style={styles.demoText}>Mật khẩu: admin123</p>
-                  </div>
-                </div>
-                <button
-                  style={styles.demoBtn}
-                  onClick={() =>
-                    setForm((f) => ({
-                      ...f,
-                      email: "admin@foodmart.vn",
-                      password: "admin123",
-                    }))
-                  }
-                >
-                  Dùng
-                </button>
-              </div>
-
-              {/* User account */}
-              <div style={styles.demoAccount}>
-                <div style={styles.demoLeft}>
-                  <span style={styles.userTag}>🛒 USER</span>
-                  <div>
-                    <p style={styles.demoText}>demo@foodmart.vn</p>
-                    <p style={styles.demoText}>Mật khẩu: 123456</p>
-                  </div>
-                </div>
-                <button
-                  style={{ ...styles.demoBtn, backgroundColor: "#f6ad55" }}
-                  onClick={() =>
-                    setForm((f) => ({
-                      ...f,
-                      email: "demo@foodmart.vn",
-                      password: "123456",
-                    }))
-                  }
-                >
-                  Dùng
-                </button>
-              </div>
-            </div>
-          )}
+          
         </div>
       </div>
     </div>
